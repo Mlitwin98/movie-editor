@@ -1,5 +1,5 @@
 from fileinput import filename
-from tkinter import DISABLED, GROOVE, RIDGE, SUNKEN, Tk, font, ttk, Frame, StringVar, Spinbox, NORMAL, Text
+from tkinter import BOTTOM, DISABLED, HORIZONTAL, LEFT, NW, RIGHT, VERTICAL, X, Y, Label, Tk, font, ttk, Frame, NORMAL, Text, Canvas
 from tkinter.constants import TOP, BOTH
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import askyesno
@@ -12,6 +12,7 @@ class App(Tk):
         super().__init__()
         self.config_root()
         self.config_style()
+        self.set_scrollbar()
         self.start_widgets()
 
     # ROOT   
@@ -27,6 +28,28 @@ class App(Tk):
         self.s = ttk.Style()
         self.s.configure('My.Label', background=self.main_color, font=('TkDefaultFont', 18))
         self.s.configure('TEntry', background='#ffffff', padding='10 10 10 10')        
+        
+    def set_scrollbar(self):
+        mainframe = Frame(self)
+        mainframe.pack(fill=Y, expand=1, anchor=NW)
+        lutCanvas = Canvas(mainframe)
+        lutCanvas.pack(side=LEFT, fill=BOTH, expand = 1)
+        scroll = ttk.Scrollbar(mainframe, orient=VERTICAL, command=lutCanvas.yview)
+        scroll.pack(side=RIGHT, fill=Y)
+
+        lutCanvas.configure(yscrollcommand=scroll.set)
+        lutCanvas.bind('<Configure>', lambda e: lutCanvas.configure(scrollregion=lutCanvas.bbox('all')))
+
+        def _on_mouse_wheel(event):
+            lutCanvas.yview_scroll(-1 * int((event.delta / 120)), "units")
+
+        lutCanvas.bind_all("<MouseWheel>", _on_mouse_wheel)
+
+        self.write_frame = Frame(lutCanvas)
+        lutCanvas.create_window((0, 0), window=self.write_frame, anchor=NW)
+
+        
+        
         
     def start_widgets(self):        
         #Labels
@@ -50,6 +73,9 @@ class App(Tk):
         self.descriptionEntry.place(x=700, y=135)
         
         self.thBtn.place(x=900, y=300)
+        
+        for i in range(50):
+            Label(self.write_frame, text="Sample scrolling label", height=2).grid(row = i, column=5)
         
     def button_min_click(self):
         self.thumbnailFileName = askopenfilename(filetypes=[("Images", "*.jpg")])
