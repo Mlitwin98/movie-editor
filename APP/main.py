@@ -1,12 +1,13 @@
 from email.policy import default
 from fileinput import filename
-from tkinter import BOTTOM, DISABLED, HORIZONTAL, LEFT, NW, RIGHT, VERTICAL, X, Y, Checkbutton, Label, Tk, font, ttk, Frame, NORMAL, Text, Canvas
+from tkinter import BOTTOM, DISABLED, HORIZONTAL, LEFT, NW, RIGHT, VERTICAL, X, Y, Checkbutton, Label, Spinbox, Tk, font, ttk, Frame, NORMAL, Text, Canvas
 from tkinter.constants import TOP, BOTH
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import askyesno
 
 from datetime import date, timedelta
 from os.path import basename
+from turtle import back
 
 class App(Tk):
     def __init__(self):
@@ -60,17 +61,24 @@ class App(Tk):
         lutCanvas.create_window((0, 0), window=self.write_frame, anchor=NW, tags='frame')
         lutCanvas.bind("<Configure>", onCanvasConfigure)
         
+        self.write_frame.columnconfigure(0, weight=1)       
         
         
-        self.write_frame.columnconfigure(0, weight=2)
-        self.write_frame.columnconfigure(1, weight=3)
-        self.write_frame.columnconfigure(2, weight=3)
-        self.write_frame.columnconfigure(3, weight=1)
-        self.write_frame.columnconfigure(4, weight=1)
+    def start_widgets(self):   
+        #LEFT SIDE WIDGETS
+        #LABELS TOP
+        Label(self.write_frame, text="Film", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=0)
+        Label(self.write_frame, text="Od", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=1, columnspan=3)
+        Label(self.write_frame, text=" ", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=4, columnspan=2)
+        Label(self.write_frame, text="Do", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=6, columnspan=3)
+        Label(self.write_frame, text=" ", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=9, columnspan=2)
+        Label(self.write_frame, text="IN", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=11)
+        Label(self.write_frame, text="OUT", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=12)
         
+        #START BTN
+        self.create_left_row()
         
-        
-    def start_widgets(self):        
+        #RIGHT SIDE     
         #Labels
         ttk.Label(self, text='Tytuł:', style='My.Label').place(x=700, y=10)
         ttk.Label(self, text='Opis:', style='My.Label').place(x=700, y=100)
@@ -83,36 +91,39 @@ class App(Tk):
         #Button
         self.thBtn = ttk.Button(self, width=15, text='Wybierz...', command=self.button_min_click)
         
-        #LEFT SIDE WIDGETS
-        #LABELS TOP
-        Label(self.write_frame, text="Film", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=0)
-        Label(self.write_frame, text="Od", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=1)
-        Label(self.write_frame, text="Do", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=2)
-        Label(self.write_frame, text="IN", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=3)
-        Label(self.write_frame, text="OUT", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=4)
-        
-        
-        #START BTN
-        self.left_side_widgets['buttons'].append(ttk.Button(self.write_frame, text='Wybierz film', command=self.button_film_click))
-        self.left_side_widgets['in'].append(Checkbutton(self.write_frame, padx=10))
-        self.left_side_widgets['out'].append(Checkbutton(self.write_frame, padx=10))
-        
         self.place_widgets()
         
     def place_widgets(self):
+        # LEFT INIT
+        self.place_left_row(0)
+        
+        # RIGHT
         self.titleEntry.insert(0, ' - Dzika Gostomia cz. ***')
         self.titleEntry.place(x=700, y=45)
-        
         self.descriptionEntry.place(x=700, y=135)
-        
         self.thBtn.place(x=900, y=300)
         
-        # LEFT
-        self.left_side_widgets['buttons'][0].grid(row = 1, column = 0)
-        self.left_side_widgets['in'][0].grid(row = 1, column = 3)
-        self.left_side_widgets['out'][0].grid(row = 1, column = 4)
-        self.left_side_widgets['in'][0].select()
-        self.left_side_widgets['out'][0].select()
+    def create_left_row(self):
+        self.left_side_widgets['buttons'].append(ttk.Button(self.write_frame, text='Wybierz film', command=self.button_film_click))
+        self.left_side_widgets['from'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=2, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=2, justify=RIGHT, font=('TkDefaultFont', 10))))
+        self.left_side_widgets['to'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=2, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=2, justify=RIGHT, font=('TkDefaultFont', 10))))
+        self.left_side_widgets['in'].append(Checkbutton(self.write_frame))
+        self.left_side_widgets['out'].append(Checkbutton(self.write_frame))
+        
+    def place_left_row(self, row_num):    
+        self.left_side_widgets['buttons'][row_num].grid(row = row_num+1, column = 0)
+        self.left_side_widgets['from'][row_num][0].grid(row = row_num+1, column=1)
+        self.left_side_widgets['from'][row_num][1].grid(row = row_num+1, column=3)
+        self.left_side_widgets['to'][row_num][0].grid(row = row_num+1, column=6)
+        self.left_side_widgets['to'][row_num][1].grid(row = row_num+1, column=8)
+        self.left_side_widgets['in'][row_num].grid(row = row_num+1, column = 11)
+        self.left_side_widgets['out'][row_num].grid(row = row_num+1, column = 12)
+        self.left_side_widgets['in'][row_num].select()
+        self.left_side_widgets['out'][row_num].select()
+        
+        Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = row_num+1, column=2)
+        Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = row_num+1, column=7)
+        
         
     def button_min_click(self):
         self.thumbnailFileName = askopenfilename(filetypes=[("Images", "*.jpg")])
@@ -120,7 +131,8 @@ class App(Tk):
             self.thBtn.config(text=basename(self.thumbnailFileName))
         
     def button_film_click(self):
-        pass    
+        self.create_left_row()
+        self.place_left_row(len(self.left_side_widgets['buttons'])-1)
         
 if __name__ == '__main__':
     App().mainloop()
