@@ -104,7 +104,8 @@ class App(Tk):
         self.thBtn.place(x=900, y=300)
         
     def create_left_row(self):
-        self.left_side_widgets['buttons'].append(ttk.Button(self.write_frame, text='Wybierz film', command=self.button_film_click))
+        row = len(self.left_side_widgets['buttons'])
+        self.left_side_widgets['buttons'].append(ttk.Button(self.write_frame, text='Wybierz film', command= lambda i=row: self.button_film_click(i)))
         self.left_side_widgets['from'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=2, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=2, justify=RIGHT, font=('TkDefaultFont', 10))))
         self.left_side_widgets['to'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=2, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=2, justify=RIGHT, font=('TkDefaultFont', 10))))
         self.left_side_widgets['in'].append(Checkbutton(self.write_frame))
@@ -130,9 +131,16 @@ class App(Tk):
         if self.thumbnailFileName:
             self.thBtn.config(text=basename(self.thumbnailFileName))
         
-    def button_film_click(self):
-        self.create_left_row()
-        self.place_left_row(len(self.left_side_widgets['buttons'])-1)
+    def button_film_click(self, row):
+        film_name = askopenfilename(filetypes=[("Images", "*.jpg")])
+        if film_name != '':
+            self.left_side_widgets['buttons'][row].config(text=basename(film_name))
+            if len(self.left_side_widgets['films']) > row:
+                self.left_side_widgets['films'][row] = film_name
+            else:
+                self.left_side_widgets['films'].append(film_name)
+                self.create_left_row()
+                self.place_left_row(row+1)
         
 if __name__ == '__main__':
     App().mainloop()
