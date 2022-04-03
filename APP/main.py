@@ -1,13 +1,10 @@
-from email.policy import default
-from fileinput import filename
-from tkinter import BOTTOM, DISABLED, HORIZONTAL, LEFT, NW, RIGHT, VERTICAL, X, Y, Checkbutton, IntVar, Label, Spinbox, Tk, font, ttk, Frame, NORMAL, Text, Canvas
-from tkinter.constants import TOP, BOTH
-from tkinter.filedialog import askopenfilename
-from tkinter.messagebox import askyesno
+from tkinter import NW, RIGHT, VERTICAL, X, Y, Checkbutton, IntVar, Label, Spinbox, Tk, font, ttk, Frame, Text, Canvas
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 
-from datetime import date, timedelta
 from os.path import basename
-from turtle import back
+
+from threading import Thread
+from editor import Editor
 
 class App(Tk):
     def __init__(self):
@@ -146,7 +143,9 @@ class App(Tk):
             self.thBtn.config(text=basename(self.thumbnailFileName))
         
     def button_film_click(self, row):
-        film_name = askopenfilename(filetypes=[("Images", "*.jpg")])
+        film_name = askopenfilename(filetypes=[("Movie", 
+                                                    "*.mp4 *.mkv *.flv *.webm *.avi *.wmv *.mpg *.mpeg *.flv *.mov"
+                                                    )])
         if film_name != '':
             self.left_side_widgets['buttons'][row].config(text=basename(film_name))
             if len(self.left_side_widgets['films']) > row:
@@ -157,23 +156,24 @@ class App(Tk):
                 self.place_left_row(row+1)
     
     def render(self):
-        out = []
-        for i, film in enumerate(self.left_side_widgets['films']):
-            state_in = self.left_side_widgets['in'][i].state()
-            state_out = self.left_side_widgets['out'][i].state()
-            
-            semi = {}
-            semi['film'] = film
-            semi['from'] = int(self.left_side_widgets['from'][i][0].get()) * 60 + int(self.left_side_widgets['from'][i][1].get())
-            semi['to'] = int(self.left_side_widgets['to'][i][0].get()) * 60 + int(self.left_side_widgets['to'][i][1].get())
-            semi['in'] = 'selected' in state_in or 'alternate' in state_in
-            semi['out'] = 'selected' in state_out or 'alternate' in state_out
+        directory = asksaveasfilename(defaultextension=".mp4", filetypes=[('Movie', '*.mp4')])
+        if directory is not None:
+            out = []
+            for i, film in enumerate(self.left_side_widgets['films']):
+                state_in = self.left_side_widgets['in'][i].state()
+                state_out = self.left_side_widgets['out'][i].state()
+                
+                semi = {}
+                semi['film'] = film
+                semi['from'] = int(self.left_side_widgets['from'][i][0].get()) * 60 + int(self.left_side_widgets['from'][i][1].get())
+                semi['to'] = int(self.left_side_widgets['to'][i][0].get()) * 60 + int(self.left_side_widgets['to'][i][1].get())
+                semi['in'] = 'selected' in state_in or 'alternate' in state_in
+                semi['out'] = 'selected' in state_out or 'alternate' in state_out
 
-            out.append(semi)
-            
-        print(out)
-        print(self.intro_var.get())
-        print(self.outro_var.get())
+                out.append(semi)
+                
+            self.editor = Editor(out, self.intro_var.get(), self.outro_var.get(), directory)
+            Thread(target = self.editor.edit).start()            
         
 if __name__ == '__main__':
     App().mainloop()
