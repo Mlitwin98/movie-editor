@@ -1,12 +1,14 @@
 from asyncio.log import logger
 from moviepy.editor import *
+from logger import MyBarLogger
 
 class Editor():
-    def __init__(self, films, intro, outro, directory):
+    def __init__(self, films, intro, outro, directory, progress_bar):
         self.films = films
         self.intro = intro
         self.outro = outro
         self.directory = directory
+        self.logger = MyBarLogger(progress_bar)
         
     def edit(self):
         clips = []
@@ -33,4 +35,5 @@ class Editor():
             clips.append(outro)
             
         fin = concatenate_videoclips(clips, method='compose')
-        fin.write_videofile(self.directory, preset='fast', threads=4)
+        self.logger.reset_pb()
+        fin.write_videofile(self.directory, preset='fast', threads=4, logger=self.logger)

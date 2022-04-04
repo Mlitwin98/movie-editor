@@ -1,9 +1,10 @@
-from tkinter import NW, RIGHT, VERTICAL, X, Y, Checkbutton, IntVar, Label, Spinbox, Tk, font, ttk, Frame, Text, Canvas
+from tkinter import HORIZONTAL, NW, RIGHT, VERTICAL, X, Y, Checkbutton, IntVar, Label, Spinbox, Tk, font, ttk, Frame, Text, Canvas
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 from os.path import basename
 
 from threading import Thread
+from tkinter.messagebox import askyesno
 from editor import Editor
 
 class App(Tk):
@@ -21,15 +22,6 @@ class App(Tk):
         self.title("Movie Edit")
         self.main_color = '#eaeaf2'
         self.configure(background = self.main_color)
-        
-        self.left_side_widgets = {
-            'buttons':[],
-            'in':[],
-            'out':[],
-            'from':[],
-            'to':[],
-            'films':[]
-        }
     
     # STYLE  
     def config_style(self):
@@ -58,10 +50,12 @@ class App(Tk):
         lutCanvas.create_window((0, 0), window=self.write_frame, anchor=NW, tags='frame')
         lutCanvas.bind("<Configure>", onCanvasConfigure)
         
-        self.write_frame.columnconfigure(0, weight=1)       
+        self.write_frame.columnconfigure(0, weight=1)     
+        
+        self.reset_data()   
         
         
-    def start_widgets(self):   
+    def start_widgets(self): 
         #LEFT SIDE WIDGETS
         #LABELS TOP
         Label(self.write_frame, text="Film", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = 0, column=0)
@@ -97,6 +91,10 @@ class App(Tk):
         self.thBtn = ttk.Button(self, width=15, text='Wybierz...', command=self.button_min_click)
         self.renderBtn = ttk.Button(self, width=20, text='Render', command=self.render)
         self.renderPlusBtn = ttk.Button(self, width=20, text='Render i wrzuć', command=self.render)
+        self.resetBtn = ttk.Button(self, width=10, text='RESET', command=self.reset)
+        
+        #Progress Bar
+        self.pb = ttk.Progressbar(self, orient=HORIZONTAL, mode='determinate', length=600)
         
         self.place_widgets()
         
@@ -107,12 +105,15 @@ class App(Tk):
         # RIGHT
         self.intro_check.place(x=600, y=10)
         self.outro_check.place(x=600, y=50)
+        self.resetBtn.place(x=900, y=370)
         self.titleEntry.insert(0, ' - Dzika Gostomia cz. ***')
         self.titleEntry.place(x=700, y=45)
         self.descriptionEntry.place(x=700, y=135)
         self.thBtn.place(x=900, y=300)
-        self.renderBtn.place(x=600, y=450)
-        self.renderPlusBtn.place(x=800, y=450)
+        self.renderBtn.place(x=600, y=425)
+        self.renderPlusBtn.place(x=800, y=425)
+        
+        self.pb.place(x=455, y=475)
         
     def create_left_row(self):
         row = len(self.left_side_widgets['buttons'])
@@ -121,6 +122,7 @@ class App(Tk):
         self.left_side_widgets['to'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=2, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=2, justify=RIGHT, font=('TkDefaultFont', 10))))
         self.left_side_widgets['in'].append(ttk.Checkbutton(self.write_frame))
         self.left_side_widgets['out'].append(ttk.Checkbutton(self.write_frame))
+        self.left_side_widgets['placeholders'].append((Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold')), Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold'))))
         
     def place_left_row(self, row_num):    
         self.left_side_widgets['buttons'][row_num].grid(row = row_num+1, column = 0)
@@ -130,12 +132,39 @@ class App(Tk):
         self.left_side_widgets['to'][row_num][1].grid(row = row_num+1, column=8)
         self.left_side_widgets['in'][row_num].grid(row = row_num+1, column = 11)
         self.left_side_widgets['out'][row_num].grid(row = row_num+1, column = 12)
-        #self.left_side_widgets['in'][row_num].select()
-        #self.left_side_widgets['out'][row_num].select()
         
-        Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = row_num+1, column=2)
-        Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold')).grid(row = row_num+1, column=7)
+        self.left_side_widgets['placeholders'][row_num][0].grid(row = row_num+1, column=2)
+        self.left_side_widgets['placeholders'][row_num][1].grid(row = row_num+1, column=7)
+    
+    def reset(self):
+        answer = askyesno(title='POTWIERDŹ', message=f'CZY NA PEWNO CHCESZ SPRZEDAĆ ZRESETOWAĆ WIDOK?')
+        if answer: 
+            for i, btn in enumerate(self.left_side_widgets['buttons']):
+                btn.destroy()
+                self.left_side_widgets['in'][i].destroy()
+                self.left_side_widgets['out'][i].destroy()
+                self.left_side_widgets['from'][i][0].destroy()
+                self.left_side_widgets['from'][i][1].destroy()
+                self.left_side_widgets['to'][i][0].destroy()
+                self.left_side_widgets['to'][i][1].destroy()
+                self.left_side_widgets['placeholders'][i][0].destroy()
+                self.left_side_widgets['placeholders'][i][1].destroy()
+            
+            self.reset_data()
+            
+            self.create_left_row()
+            self.place_left_row(0)
         
+    def reset_data(self):
+        self.left_side_widgets = {
+                'buttons':[],
+                'in':[],
+                'out':[],
+                'from':[],
+                'to':[],
+                'placeholders':[],
+                'films':[]
+            }    
         
     def button_min_click(self):
         self.thumbnailFileName = askopenfilename(filetypes=[("Images", "*.jpg")])
@@ -172,7 +201,8 @@ class App(Tk):
 
                 out.append(semi)
                 
-            self.editor = Editor(out, self.intro_var.get(), self.outro_var.get(), directory)
+            self.editor = Editor(out, self.intro_var.get(), self.outro_var.get(), directory, self.pb)
+            #print(out)
             Thread(target = self.editor.edit).start()            
         
 if __name__ == '__main__':
