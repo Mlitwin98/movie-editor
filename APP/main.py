@@ -1,4 +1,4 @@
-from tkinter import HORIZONTAL, NW, RIGHT, VERTICAL, X, Y, Checkbutton, IntVar, Label, Spinbox, Tk, font, ttk, Frame, Text, Canvas
+from tkinter import DISABLED, HORIZONTAL, NORMAL, NW, RIGHT, VERTICAL, X, Y, Checkbutton, IntVar, Label, Spinbox, Tk, font, ttk, Frame, Text, Canvas
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 from os.path import basename
@@ -173,7 +173,7 @@ class App(Tk):
         
     def button_film_click(self, row):
         film_name = askopenfilename(filetypes=[("Movie", 
-                                                    "*.mp4 *.mkv *.flv *.webm *.avi *.wmv *.mpg *.mpeg *.flv *.mov"
+                                                    "*.mp4 *.mkv *.flv *.webm *.avi *.wmv *.mpg *.mpeg *.flv *.mov *.mts"
                                                     )])
         if film_name != '':
             self.left_side_widgets['buttons'][row].config(text=basename(film_name))
@@ -201,9 +201,10 @@ class App(Tk):
 
                 out.append(semi)
                 
-            self.editor = Editor(out, self.intro_var.get(), self.outro_var.get(), directory, self.pb)
-            #print(out)
-            Thread(target = self.editor.edit).start()            
+            self.editor = Editor(out, self.intro_var.get(), self.outro_var.get(), directory, self.pb, self.renderBtn, self.renderPlusBtn)
+            
+            tr = Thread(target = self.editor.edit)
+            tr.start()
         
 if __name__ == '__main__':
     App().mainloop()

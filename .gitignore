@@ -1,6 +1,7 @@
 clips/
 *.mp4
 static/
+*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
