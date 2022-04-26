@@ -20,7 +20,7 @@ class MyBarLogger(ProgressBarLogger):
             if percent_complete >= 100:
                 percent_complete = 0
                 if self.one_timer:
-                    showinfo(title='Koniec', message='Renderowanie zakończone')
+                    showinfo(title='Koniec renderowania', message='Renderowanie zakończone')
                     self.one_timer = False
                 
             self.progress_bar['value'] = percent_complete

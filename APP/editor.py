@@ -1,14 +1,18 @@
 from tkinter import DISABLED, NORMAL
+from tkinter.messagebox import showinfo
 from moviepy.editor import *
 from logger import MyBarLogger
+from uploader import upload
 
 class Editor():
-    def __init__(self, films, intro, outro, directory, progress_bar, btn1, btn2):
+    def __init__(self, films, intro, outro, directory, progress_bar, btn1, btn2, title, description):
         self.films = films
         self.intro = intro
         self.outro = outro
         self.btn1 = btn1
         self.btn2 = btn2
+        self.title = title
+        self.description = description
         self.directory = directory
         self.logger = MyBarLogger(progress_bar)
         
@@ -44,4 +48,9 @@ class Editor():
         self.logger.reset_pb()
         fin.write_videofile(self.directory, preset='fast', threads=4, logger=self.logger)
         self.btn1['state'] = NORMAL
-        self.btn2['state'] = NORMAL
+        self.btn2['state'] = NORMAL            
+        
+    def edit_and_upload(self):
+        #self.edit()
+        upload(self.directory, self.title, self.description)
+        showinfo(title='Koniec autoryzacji', message='Uruchomiono upload\n1. Dodaj film do playlisty\n2. Uruchom zarabianie\n3. Ustaw film jako publiczny')

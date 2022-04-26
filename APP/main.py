@@ -1,4 +1,4 @@
-from tkinter import DISABLED, HORIZONTAL, NORMAL, NW, RIGHT, VERTICAL, X, Y, Checkbutton, IntVar, Label, Spinbox, Tk, font, ttk, Frame, Text, Canvas
+from tkinter import END, HORIZONTAL, NW, RIGHT, VERTICAL, Y, Checkbutton, IntVar, Label, Spinbox, Tk, font, ttk, Frame, Text, Canvas
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 from os.path import basename
@@ -89,8 +89,8 @@ class App(Tk):
         
         #Button
         self.thBtn = ttk.Button(self, width=15, text='Wybierz...', command=self.button_min_click)
-        self.renderBtn = ttk.Button(self, width=20, text='Render', command=self.render)
-        self.renderPlusBtn = ttk.Button(self, width=20, text='Render i wrzuć', command=self.render)
+        self.renderBtn = ttk.Button(self, width=20, text='Render', command= lambda:self.render('BASIC'))
+        self.renderPlusBtn = ttk.Button(self, width=20, text='Render i wrzuć', command= lambda:self.render('PLUS'))
         self.resetBtn = ttk.Button(self, width=10, text='RESET', command=self.reset)
         
         #Progress Bar
@@ -184,9 +184,9 @@ class App(Tk):
                 self.create_left_row()
                 self.place_left_row(row+1)
     
-    def render(self):
+    def render(self, mode):
         directory = asksaveasfilename(defaultextension=".mp4", filetypes=[('Movie', '*.mp4')])
-        if directory is not None:
+        if directory is not None and len(directory) > 0:
             out = []
             for i, film in enumerate(self.left_side_widgets['films']):
                 state_in = self.left_side_widgets['in'][i].state()
@@ -201,9 +201,13 @@ class App(Tk):
 
                 out.append(semi)
                 
-            self.editor = Editor(out, self.intro_var.get(), self.outro_var.get(), directory, self.pb, self.renderBtn, self.renderPlusBtn)
+            self.editor = Editor(out, self.intro_var.get(), self.outro_var.get(), directory, self.pb, self.renderBtn, self.renderPlusBtn, self.titleEntry.get(), self.descriptionEntry.get("1.0", END))
             
-            tr = Thread(target = self.editor.edit)
+            if mode == 'BASIC':
+                tr = Thread(target = self.editor.edit)
+            elif mode == 'PLUS':
+                tr = Thread(target = self.editor.edit_and_upload)
+                
             tr.start()
         
 if __name__ == '__main__':

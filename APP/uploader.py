@@ -80,22 +80,24 @@ def get_authenticated_service():
         http=credentials.authorize(httplib2.Http()))
 
 def initialize_upload(youtube, file, title, description):
-    tags = None
+    tags = ['Gostomia','Nowe Miasto nad Pilicą','Ereagle','zwierzęta','fotopułapka',
+            'Pilica','Sarny','Dziki','Jelenie','Borsuk','Lis','Zrzuty','Parostki','Wilk','Jeleń','Poroże','Rykowisko','Trap Camera','Animals','Wolf']
 
-    body=dict(
-        snippet=dict(
-            title=title,
-            description=description,
-            tags=tags,
-            categoryId='15'
-        ),
-        status=dict(
-            privacyStatus='private'
-        )
-    )
+    body = {
+        'snippet': {
+            'title': title,
+            'description': description,
+            'tags': tags,
+            'categoryId' : 15
+        },
+        'status': {
+            'privacyStatus' : 'private',
+            'selfDeclaredMadeForKids' : False,
+        }
+    }
 
     # Call the API's videos.insert method to create and upload the video.
-    insert_request = youtube.videos().insert(
+    youtube.videos().insert(
         part=",".join(body.keys()),
         body=body,
         # The chunksize parameter specifies the size of each chunk of data, in
@@ -110,38 +112,7 @@ def initialize_upload(youtube, file, title, description):
         # running on App Engine, you should set the chunksize to something like
         # 1024 * 1024 (1 megabyte).
         media_body=MediaFileUpload(file, chunksize=-1, resumable=True)
-    )
-
-    resumable_upload(insert_request)
-
-# This method implements an exponential backoff strategy to resume a
-# failed upload.
-def resumable_upload(insert_request):
-    response = None
-    error = None
-    retry = 0
-    while response is None:
-        try:
-            status, response = insert_request.next_chunk()
-        except HttpError as e:
-            if e.resp.status in RETRIABLE_STATUS_CODES:
-                error = "A retriable HTTP error %d occurred:\n%s" % (e.resp.status,
-                                                                    e.content)
-            else:
-                raise
-        except RETRIABLE_EXCEPTIONS as e:
-            error = "A retriable error occurred: %s" % e
-
-        if error is not None:
-            print(error)
-        retry += 1
-        if retry > MAX_RETRIES:
-            exit("No longer attempting to retry.")
-
-        max_sleep = 2 ** retry
-        sleep_seconds = random.random() * max_sleep
-        print("Sleeping %f seconds and then retrying..." % sleep_seconds)
-        time.sleep(sleep_seconds)
+    ).execute()
 
 def upload(file, title, description):
     youtube = get_authenticated_service()
