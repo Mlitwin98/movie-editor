@@ -1,7 +1,4 @@
-from fastprogress import progress_bar
-from matplotlib.pyplot import show
 from proglog import ProgressBarLogger
-from math import floor
 from tkinter.messagebox import showinfo
 
 class MyBarLogger(ProgressBarLogger):

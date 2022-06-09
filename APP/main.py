@@ -1,4 +1,4 @@
-from tkinter import END, HORIZONTAL, NW, RIGHT, VERTICAL, Y, Checkbutton, IntVar, Label, Spinbox, Tk, font, ttk, Frame, Text, Canvas
+from tkinter import  HORIZONTAL, NW, RIGHT, VERTICAL, Y, Checkbutton, IntVar, Label, Spinbox, Tk, ttk, Frame, Canvas
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 from os.path import basename
@@ -18,7 +18,7 @@ class App(Tk):
     # ROOT   
     def config_root(self):
         self.resizable(width=False, height=False)
-        self.geometry('1080x500')
+        self.geometry('800x500')
         self.title("Movie Edit")
         self.main_color = '#eaeaf2'
         self.configure(background = self.main_color)
@@ -46,7 +46,7 @@ class App(Tk):
         lutCanvas.bind_all("<MouseWheel>", _on_mouse_wheel)
 
         scroll.pack(side=RIGHT, fill=Y)
-        lutCanvas.place(relheight=1, relwidth=0.4, relx=0)
+        lutCanvas.place(relheight=1, relwidth=0.6, relx=0)
         lutCanvas.create_window((0, 0), window=self.write_frame, anchor=NW, tags='frame')
         lutCanvas.bind("<Configure>", onCanvasConfigure)
         
@@ -71,11 +71,8 @@ class App(Tk):
         
         #RIGHT SIDE     
         #Labels
-        ttk.Label(self, text='INTRO:', style='My.Label').place(x=500, y=10)
-        ttk.Label(self, text='OUTRO:', style='My.Label').place(x=490, y=50)
-        ttk.Label(self, text='Tytuł:', style='My.Label').place(x=700, y=10)
-        ttk.Label(self, text='Opis:', style='My.Label').place(x=700, y=100)
-        ttk.Label(self, text='Miniaturka:', style='My.Label').place(x=700, y=300)
+        ttk.Label(self, text='INTRO:', style='My.Label').place(x=590, y=10)
+        ttk.Label(self, text='OUTRO:', style='My.Label').place(x=580, y=50)
         
         #Check Boxes
         self.intro_var = IntVar(value=1)
@@ -83,18 +80,12 @@ class App(Tk):
         self.intro_check = Checkbutton(self, variable=self.intro_var, background='#eaeaf2')
         self.outro_check = Checkbutton(self, variable=self.outro_var, background='#eaeaf2')
         
-        #Entries
-        self.titleEntry = ttk.Entry(self, style='TEntry', font=('TkDefaultFont', 14, 'bold'), width=30)
-        self.descriptionEntry = Text(self, background='#ffffff', font=('TkDefaultFont', 14), width=30, height=6, padx=10, pady=10)
-        
         #Button
-        self.thBtn = ttk.Button(self, width=15, text='Wybierz...', command=self.button_min_click)
-        self.renderBtn = ttk.Button(self, width=20, text='Render', command= lambda:self.render('BASIC'))
-        self.renderPlusBtn = ttk.Button(self, width=20, text='Render i wrzuć', command= lambda:self.render('PLUS'))
+        self.renderBtn = ttk.Button(self, width=20, text='Render', command=self.render)
         self.resetBtn = ttk.Button(self, width=10, text='RESET', command=self.reset)
         
         #Progress Bar
-        self.pb = ttk.Progressbar(self, orient=HORIZONTAL, mode='determinate', length=600)
+        self.pb = ttk.Progressbar(self, orient=HORIZONTAL, mode='determinate', length=300)
         
         self.place_widgets()
         
@@ -103,23 +94,18 @@ class App(Tk):
         self.place_left_row(0)
         
         # RIGHT
-        self.intro_check.place(x=600, y=10)
-        self.outro_check.place(x=600, y=50)
-        self.resetBtn.place(x=900, y=370)
-        self.titleEntry.insert(0, ' - Dzika Gostomia cz. ***')
-        self.titleEntry.place(x=700, y=45)
-        self.descriptionEntry.place(x=700, y=135)
-        self.thBtn.place(x=900, y=300)
-        self.renderBtn.place(x=600, y=425)
-        self.renderPlusBtn.place(x=800, y=425)
+        self.intro_check.place(x=680, y=10)
+        self.outro_check.place(x=680, y=50)
+        self.resetBtn.place(x=600, y=330)
+        self.renderBtn.place(x=570, y=425)
         
-        self.pb.place(x=455, y=475)
+        self.pb.place(x=490, y=475)
         
     def create_left_row(self):
         row = len(self.left_side_widgets['buttons'])
         self.left_side_widgets['buttons'].append(ttk.Button(self.write_frame, text='Wybierz film', command= lambda i=row: self.button_film_click(i)))
-        self.left_side_widgets['from'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=2, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=2, justify=RIGHT, font=('TkDefaultFont', 10))))
-        self.left_side_widgets['to'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=2, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=2, justify=RIGHT, font=('TkDefaultFont', 10))))
+        self.left_side_widgets['from'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=4, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=4, justify=RIGHT, font=('TkDefaultFont', 10))))
+        self.left_side_widgets['to'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=4, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=4, justify=RIGHT, font=('TkDefaultFont', 10))))
         self.left_side_widgets['in'].append(ttk.Checkbutton(self.write_frame))
         self.left_side_widgets['out'].append(ttk.Checkbutton(self.write_frame))
         self.left_side_widgets['placeholders'].append((Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold')), Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold'))))
@@ -137,7 +123,7 @@ class App(Tk):
         self.left_side_widgets['placeholders'][row_num][1].grid(row = row_num+1, column=7)
     
     def reset(self):
-        answer = askyesno(title='POTWIERDŹ', message=f'CZY NA PEWNO CHCESZ SPRZEDAĆ ZRESETOWAĆ WIDOK?')
+        answer = askyesno(title='POTWIERDŹ', message=f'CZY NA PEWNO CHCESZ ZRESETOWAĆ WIDOK?')
         if answer: 
             for i, btn in enumerate(self.left_side_widgets['buttons']):
                 btn.destroy()
@@ -166,11 +152,6 @@ class App(Tk):
                 'films':[]
             }    
         
-    def button_min_click(self):
-        self.thumbnailFileName = askopenfilename(filetypes=[("Images", "*.jpg")])
-        if self.thumbnailFileName:
-            self.thBtn.config(text=basename(self.thumbnailFileName))
-        
     def button_film_click(self, row):
         film_name = askopenfilename(filetypes=[("Movie", 
                                                     "*.mp4 *.mkv *.flv *.webm *.avi *.wmv *.mpg *.mpeg *.flv *.mov *.mts"
@@ -184,7 +165,7 @@ class App(Tk):
                 self.create_left_row()
                 self.place_left_row(row+1)
     
-    def render(self, mode):
+    def render(self):
         directory = asksaveasfilename(defaultextension=".mp4", filetypes=[('Movie', '*.mp4')])
         if directory is not None and len(directory) > 0:
             out = []
@@ -201,13 +182,9 @@ class App(Tk):
 
                 out.append(semi)
                 
-            self.editor = Editor(out, self.intro_var.get(), self.outro_var.get(), directory, self.pb, self.renderBtn, self.renderPlusBtn, self.titleEntry.get(), self.descriptionEntry.get("1.0", END))
+            self.editor = Editor(out, self.intro_var.get(), self.outro_var.get(), directory, self.pb, self.renderBtn)
             
-            if mode == 'BASIC':
-                tr = Thread(target = self.editor.edit)
-            elif mode == 'PLUS':
-                tr = Thread(target = self.editor.edit_and_upload)
-                
+            tr = Thread(target = self.editor.edit) 
             tr.start()
         
 if __name__ == '__main__':
