@@ -115,6 +115,7 @@ class App(Tk):
         self.left_side_widgets['in'].append(ttk.Checkbutton(self.write_frame))
         self.left_side_widgets['out'].append(ttk.Checkbutton(self.write_frame))
         self.left_side_widgets['placeholders'].append((Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold')), Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold'))))
+        self.left_side_widgets['delete'].append(ttk.Button(self.write_frame, width=2, text='X', command= lambda i=row: self.delete_row(i)))
         self.set_spinboxes(row, dur_min=dur_min, dur_sec=dur_sec)
         
     def place_left_row(self, row_num):    
@@ -125,6 +126,7 @@ class App(Tk):
         self.left_side_widgets['to'][row_num][1].grid(row = row_num+1, column=8)
         self.left_side_widgets['in'][row_num].grid(row = row_num+1, column = 11)
         self.left_side_widgets['out'][row_num].grid(row = row_num+1, column = 12)
+        self.left_side_widgets['delete'][row_num].grid(row = row_num+1, column = 13)
         
         self.left_side_widgets['placeholders'][row_num][0].grid(row = row_num+1, column=2)
         self.left_side_widgets['placeholders'][row_num][1].grid(row = row_num+1, column=7)
@@ -135,20 +137,29 @@ class App(Tk):
         
         self.left_side_widgets['to'][row][1].delete(0, 'end')
         self.left_side_widgets['to'][row][1].insert(0, dur_sec)
+        
+    def delete_row(self, row, single=True):
+        self.left_side_widgets['delete'][row].destroy()
+        self.left_side_widgets['buttons'][row].destroy()
+        self.left_side_widgets['in'][row].destroy()
+        self.left_side_widgets['out'][row].destroy()
+        self.left_side_widgets['from'][row][0].destroy()
+        self.left_side_widgets['from'][row][1].destroy()
+        self.left_side_widgets['to'][row][0].destroy()
+        self.left_side_widgets['to'][row][1].destroy()
+        self.left_side_widgets['placeholders'][row][0].destroy()
+        self.left_side_widgets['placeholders'][row][1].destroy()
+          
+        if single:      
+            self.left_side_widgets['films'][row] = 'NONE'
+                
+        
     
     def reset(self):
         answer = askyesno(title='POTWIERDŹ', message=f'CZY NA PEWNO CHCESZ ZRESETOWAĆ WIDOK?')
         if answer: 
-            for i, btn in enumerate(self.left_side_widgets['buttons']):
-                btn.destroy()
-                self.left_side_widgets['in'][i].destroy()
-                self.left_side_widgets['out'][i].destroy()
-                self.left_side_widgets['from'][i][0].destroy()
-                self.left_side_widgets['from'][i][1].destroy()
-                self.left_side_widgets['to'][i][0].destroy()
-                self.left_side_widgets['to'][i][1].destroy()
-                self.left_side_widgets['placeholders'][i][0].destroy()
-                self.left_side_widgets['placeholders'][i][1].destroy()
+            for i in range(len(self.left_side_widgets['buttons'])):
+                self.delete_row(i, single=False)
             
             self.reset_data()
             
@@ -157,6 +168,7 @@ class App(Tk):
         
     def reset_data(self):
         self.left_side_widgets = {
+                'delete':[],
                 'buttons':[],
                 'in':[],
                 'out':[],
@@ -167,7 +179,11 @@ class App(Tk):
             } 
         
     def add_text(self):
-        pass   
+        row = len(self.left_side_widgets['buttons'])-1
+        self.left_side_widgets['buttons'][row].config(text='Text')  
+        self.left_side_widgets['films'].append('Text')
+        self.create_left_row()
+        self.place_left_row(row+1)
         
     def button_film_click(self, row):
         film_name = askopenfilename(filetypes=[("Movie", 
@@ -196,17 +212,18 @@ class App(Tk):
         if directory is not None and len(directory) > 0:
             out = []
             for i, film in enumerate(self.left_side_widgets['films']):
-                state_in = self.left_side_widgets['in'][i].state()
-                state_out = self.left_side_widgets['out'][i].state()
-                
-                semi = {}
-                semi['film'] = film
-                semi['from'] = int(self.left_side_widgets['from'][i][0].get()) * 60 + int(self.left_side_widgets['from'][i][1].get())
-                semi['to'] = int(self.left_side_widgets['to'][i][0].get()) * 60 + int(self.left_side_widgets['to'][i][1].get())
-                semi['in'] = 'selected' in state_in or 'alternate' in state_in
-                semi['out'] = 'selected' in state_out or 'alternate' in state_out
+                if film != 'NONE':
+                    state_in = self.left_side_widgets['in'][i].state()
+                    state_out = self.left_side_widgets['out'][i].state()
+                    
+                    semi = {}
+                    semi['film'] = film
+                    semi['from'] = int(self.left_side_widgets['from'][i][0].get()) * 60 + int(self.left_side_widgets['from'][i][1].get())
+                    semi['to'] = int(self.left_side_widgets['to'][i][0].get()) * 60 + int(self.left_side_widgets['to'][i][1].get())
+                    semi['in'] = 'selected' in state_in or 'alternate' in state_in
+                    semi['out'] = 'selected' in state_out or 'alternate' in state_out
 
-                out.append(semi)
+                    out.append(semi)
                 
             self.editor = Editor(out, self.intro_var.get(), self.outro_var.get(), directory, self.pb, self.renderBtn)
             

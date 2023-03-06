@@ -1,10 +1,10 @@
 from tkinter import DISABLED, NORMAL
-from tkinter.messagebox import showinfo
-from moviepy.video.compositing.concatenate import concatenate_videoclips
+from tkinter.messagebox import showinfo, showerror
+from moviepy.video.compositing.concatenate import concatenate_videoclips, CompositeVideoClip
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from moviepy.video.fx.fadein import fadein
 from moviepy.video.fx.fadeout import fadeout
-from moviepy.video.VideoClip import ImageClip
+from moviepy.video.VideoClip import ImageClip, TextClip
 from logger import MyBarLogger
 #from uploader import upload
 
@@ -31,7 +31,23 @@ class Editor():
         
         for film in self.films:
             try:
-                clip = VideoFileClip(film['film'], target_resolution=(1080, 1920), fps_source='fps').subclip(film['from'], film['to'])
+                if film['film'] == 'Text':
+                    bg = ImageClip('static/blackscreen.jpg', duration=6)
+                    text = TextClip('Dupa')
+                    film = CompositeVideoClip([bg, text])
+                    clips.append(film)
+                else:
+                    clip = VideoFileClip(film['film'], target_resolution=(1080, 1920), fps_source='fps')
+                    
+                    duration = int(clip.duration)
+                
+                    if film['to'] > duration:
+                        showerror('BŁĄD', f"Błąd długości... \nSprawdź czy film\n{film['film']}\ntrwa do {film['to']//60}:{film['to'] - film['to']//60*60}")
+                        self.logger.reset_pb()
+                        self.btn1['state'] = NORMAL 
+                        return None
+                        
+                    clip = clip.subclip(film['from'], film['to'])
                 
                 if film['in']:
                     clip = clip.fx(fadein, 0.5)
