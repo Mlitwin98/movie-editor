@@ -3,6 +3,8 @@ clips/
 static/
 *.json
 *.mp3
+*.ipynb
+*.rar
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
