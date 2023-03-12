@@ -1,4 +1,4 @@
-from tkinter import  HORIZONTAL, NW, RIGHT, VERTICAL, Y, Checkbutton, IntVar, Label, Spinbox, Tk, ttk, Frame, Canvas
+from tkinter import  HORIZONTAL, NW, RIGHT, VERTICAL, Y, Checkbutton, IntVar, Label, Spinbox, Tk, ttk, Frame, Canvas, simpledialog
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 from os.path import basename
@@ -107,9 +107,12 @@ class App(Tk):
         
         self.pb.place(PROGRESSBAR_PLACEMENT)
         
-    def create_left_row(self, dur_min=0, dur_sec=0):
+    def create_left_row(self, dur_min=0, dur_sec=0, text_button=False):
         row = len(self.left_side_widgets['buttons'])
-        self.left_side_widgets['buttons'].append(ttk.Button(self.write_frame, text='Wybierz film', command= lambda i=row: self.button_film_click(i)))
+        if text_button:
+            self.left_side_widgets['buttons'].append(ttk.Button(self.write_frame, text='Napisz tekst', command= lambda i=row: self.button_text_click(i)))
+        else:
+            self.left_side_widgets['buttons'].append(ttk.Button(self.write_frame, text='Wybierz film', command= lambda i=row: self.button_film_click(i)))
         self.left_side_widgets['from'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=4, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=4, justify=RIGHT, font=('TkDefaultFont', 10))))
         self.left_side_widgets['to'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=4, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=4, justify=RIGHT, font=('TkDefaultFont', 10))))
         self.left_side_widgets['in'].append(ttk.Checkbutton(self.write_frame))
@@ -117,6 +120,7 @@ class App(Tk):
         self.left_side_widgets['placeholders'].append((Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold')), Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold'))))
         self.left_side_widgets['delete'].append(ttk.Button(self.write_frame, width=2, text='X', command= lambda i=row: self.delete_row(i)))
         self.set_spinboxes(row, dur_min=dur_min, dur_sec=dur_sec)
+        return row
         
     def place_left_row(self, row_num):    
         self.left_side_widgets['buttons'][row_num].grid(row = row_num+1, column = 0)
@@ -150,8 +154,11 @@ class App(Tk):
         self.left_side_widgets['placeholders'][row][0].destroy()
         self.left_side_widgets['placeholders'][row][1].destroy()
           
-        if single:      
-            self.left_side_widgets['films'][row] = 'NONE'
+        if single:
+            try:      
+                self.left_side_widgets['films'][row] = None
+            except:
+                self.left_side_widgets['films'].append(None)
                 
         
     
@@ -177,13 +184,21 @@ class App(Tk):
                 'placeholders':[],
                 'films':[]
             } 
+
+    def button_text_click(self, row):
+        if len(self.left_side_widgets['films']) > row:
+            text = simpledialog.askstring(f'Tekst', 'Wprowadź tekst:\t\t\t\t\t\t\t\t\t\t\t', initialvalue=self.left_side_widgets['films'][row])
+            self.left_side_widgets['films'][row] = text
+        else:
+            text = simpledialog.askstring(f'Tekst', 'Wprowadź tekst:\t\t\t\t\t\t\t\t\t\t\t')
+            self.left_side_widgets['buttons'][row].config(text='Tekst')  
+            self.left_side_widgets['films'].append(text)
+            new_row = self.create_left_row()
+            self.place_left_row(new_row)
         
     def add_text(self):
-        row = len(self.left_side_widgets['buttons'])-1
-        self.left_side_widgets['buttons'][row].config(text='Text')  
-        self.left_side_widgets['films'].append('Text')
-        self.create_left_row()
-        self.place_left_row(row+1)
+        row = self.create_left_row(text_button=True)
+        self.place_left_row(row)
         
     def button_film_click(self, row):
         film_name = askopenfilename(filetypes=[("Movie", 
@@ -204,15 +219,15 @@ class App(Tk):
                 self.left_side_widgets['films'][row] = film_name
             else:
                 self.left_side_widgets['films'].append(film_name)
-                self.create_left_row()
-                self.place_left_row(row+1)
+                new_row = self.create_left_row()
+                self.place_left_row(new_row)
     
     def render(self):
         directory = asksaveasfilename(defaultextension=".mp4", filetypes=[('Movie', '*.mp4')])
         if directory is not None and len(directory) > 0:
             out = []
             for i, film in enumerate(self.left_side_widgets['films']):
-                if film != 'NONE':
+                if film is not None:
                     state_in = self.left_side_widgets['in'][i].state()
                     state_out = self.left_side_widgets['out'][i].state()
                     
@@ -222,6 +237,7 @@ class App(Tk):
                     semi['to'] = int(self.left_side_widgets['to'][i][0].get()) * 60 + int(self.left_side_widgets['to'][i][1].get())
                     semi['in'] = 'selected' in state_in or 'alternate' in state_in
                     semi['out'] = 'selected' in state_out or 'alternate' in state_out
+                    semi['is_text'] = True if self.left_side_widgets['buttons'][i]['text'] == 'Tekst' else False
 
                     out.append(semi)
                 

@@ -19,23 +19,39 @@ class Editor():
         self.directory = directory
         self.logger = MyBarLogger(progress_bar)
         
+    def handle_intro(self, clips):
+        if self.intro:
+            intro = VideoFileClip('static/intro.mp4', target_resolution=(1080, 1920), fps_source='fps')
+            intro = self.handle_fades(intro, True, True)
+            clips.append(intro)
+            
+    def handle_outro(self, clips):
+        if self.outro:
+            outro = ImageClip('static/ending.jpg', duration=5)
+            outro = self.handle_fades(outro, True, True)
+            clips.append(outro)
+
+    def handle_fades(self, clip, to_fadein:bool, to_fadeout:bool):
+        if to_fadein:
+            clip = clip.fx(fadein, 0.5)     
+        if to_fadeout:
+            clip = clip.fx(fadeout, 0.5)
+            
+        return clip
+        
     def edit(self):
         self.btn1['state'] = DISABLED
         
         clips = []
-        if self.intro:
-            intro = VideoFileClip('static/intro.mp4', target_resolution=(1080, 1920), fps_source='fps')
-            intro = intro.fx(fadein, 0.5)
-            intro = intro.fx(fadeout, 0.5)
-            clips.append(intro)
+        
+        self.handle_intro(clips)
         
         for film in self.films:
             try:
-                if film['film'] == 'Text':
+                if film['is_text']:
                     bg = ImageClip('static/blackscreen.jpg', duration=6)
-                    text = TextClip('Dupa')
-                    film = CompositeVideoClip([bg, text])
-                    clips.append(film)
+                    text = TextClip(film['film'], fontsize=55, color='white', align='center', stroke_color='black', method='caption', size=(1920,1080))
+                    clip = CompositeVideoClip([bg, text]).subclip(0, 6)
                 else:
                     clip = VideoFileClip(film['film'], target_resolution=(1080, 1920), fps_source='fps')
                     
@@ -49,21 +65,13 @@ class Editor():
                         
                     clip = clip.subclip(film['from'], film['to'])
                 
-                if film['in']:
-                    clip = clip.fx(fadein, 0.5)
-                    
-                if film['out']:
-                    clip = clip.fx(fadeout, 0.5)
-                    
+                clip = self.handle_fades(clip, film['in'], film['out'])
+
                 clips.append(clip)
             except:
                 self.btn1['state'] = NORMAL
             
-        if self.outro:
-            outro = ImageClip('static/ending.jpg', duration=5)
-            outro = outro.fx(fadein, 0.5)
-            outro = outro.fx(fadeout, 0.5)
-            clips.append(outro)
+        self.handle_outro(clips)
             
         fin = concatenate_videoclips(clips, method='compose')
         self.logger.reset_pb()
