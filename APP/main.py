@@ -21,6 +21,13 @@ class App(Tk):
 
     # ROOT   
     def config_root(self):
+        """
+            Root settings:\n
+            Is not resizable\n
+            Set geometry\n
+            Set title\n
+            Set background color
+        """
         self.resizable(width=False, height=False)
         self.geometry(GEOMETRY)
         self.title(TITLE)
@@ -135,13 +142,6 @@ class App(Tk):
         self.left_side_widgets['placeholders'][row_num][0].grid(row = row_num+1, column=2)
         self.left_side_widgets['placeholders'][row_num][1].grid(row = row_num+1, column=7)
         
-    def set_spinboxes(self, row, dur_min, dur_sec):
-        self.left_side_widgets['to'][row][0].delete(0, 'end')
-        self.left_side_widgets['to'][row][0].insert(0, dur_min)
-        
-        self.left_side_widgets['to'][row][1].delete(0, 'end')
-        self.left_side_widgets['to'][row][1].insert(0, dur_sec)
-        
     def delete_row(self, row, single=True):
         self.left_side_widgets['delete'][row].destroy()
         self.left_side_widgets['buttons'][row].destroy()
@@ -160,9 +160,25 @@ class App(Tk):
             except:
                 self.left_side_widgets['films'].append(None)
                 
+    def set_spinboxes(self, row:int, dur_min:int, dur_sec:int):
+        """
+        Edit "to" spinbox in specified row to specified minutes and seconds
+
+        Args:
+            row (int): Spinbox row to edit
+            dur_min (int): Duration minutes to set
+            dur_sec (int): Duration seconds to set
+        """
+        self.left_side_widgets['to'][row][0].delete(0, 'end')
+        self.left_side_widgets['to'][row][0].insert(0, dur_min)
         
+        self.left_side_widgets['to'][row][1].delete(0, 'end')
+        self.left_side_widgets['to'][row][1].insert(0, dur_sec)
     
     def reset(self):
+        """
+            Reset left side
+        """
         answer = askyesno(title='POTWIERDŹ', message=f'CZY NA PEWNO CHCESZ ZRESETOWAĆ WIDOK?')
         if answer: 
             for i in range(len(self.left_side_widgets['buttons'])):
@@ -174,6 +190,9 @@ class App(Tk):
             self.place_left_row(0)
         
     def reset_data(self):
+        """
+            Reset stored film variables
+        """
         self.left_side_widgets = {
                 'delete':[],
                 'buttons':[],
@@ -185,7 +204,13 @@ class App(Tk):
                 'films':[]
             } 
 
-    def button_text_click(self, row):
+    def button_text_click(self, row:int):
+        """
+            Change text of text button in specified row
+
+        Args:
+            row (int): Row in which to change button's text in
+        """
         if len(self.left_side_widgets['films']) > row:
             text = simpledialog.askstring(f'Tekst', 'Wprowadź tekst:\t\t\t\t\t\t\t\t\t\t\t', initialvalue=self.left_side_widgets['films'][row])
             self.left_side_widgets['films'][row] = text
@@ -197,6 +222,9 @@ class App(Tk):
             self.place_left_row(new_row)
         
     def add_text(self):
+        """
+            Add text button
+        """
         row = self.create_left_row(text_button=True)
         self.place_left_row(row)
         
@@ -223,6 +251,10 @@ class App(Tk):
                 self.place_left_row(new_row)
     
     def render(self):
+        """
+            Asks user for path and filename of rendered movie\n
+            Creates Editor in new thread based on given left side variables
+        """
         directory = asksaveasfilename(defaultextension=".mp4", filetypes=[('Movie', '*.mp4')])
         if directory is not None and len(directory) > 0:
             out = []
