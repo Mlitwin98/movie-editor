@@ -36,11 +36,17 @@ class App(Tk):
     
     # STYLE  
     def config_style(self):
+        """
+            Config default styles
+        """
         self.s = ttk.Style()
         self.s.configure('My.Label', background=self.main_color, font=('TkDefaultFont', 18))
         self.s.configure('TEntry', background='#ffffff', padding='10 10 10 10')        
         
     def set_scrollbar(self):
+        """
+            Config left side scrollbar
+        """
         def onCanvasConfigure(e):
             lutCanvas.itemconfig('frame', width=lutCanvas.winfo_width())
         
@@ -66,7 +72,10 @@ class App(Tk):
         self.reset_data()   
         
         
-    def start_widgets(self): 
+    def start_widgets(self):
+        """
+            Initialize statick widgets and create 1st left row
+        """ 
         #LEFT SIDE WIDGETS
         #LABELS TOP
         Label(self.write_frame, text="Film", height=3, font=TOP_FONT).grid(row = 0, column=0)
@@ -102,6 +111,9 @@ class App(Tk):
         self.place_widgets()
         
     def place_widgets(self):
+        """
+            Place initialized statick widgets
+        """
         # LEFT INIT
         self.place_left_row(0)
         
@@ -114,7 +126,18 @@ class App(Tk):
         
         self.pb.place(PROGRESSBAR_PLACEMENT)
         
-    def create_left_row(self, dur_min=0, dur_sec=0, text_button=False):
+    def create_left_row(self, dur_min:int=0, dur_sec:int=0, text_button:bool=False) -> int:
+        """
+            Initialize additional left row
+
+        Args:
+            dur_min (int, optional): Duration minutes to set the spinxbox to. Defaults to 0.
+            dur_sec (int, optional): Duration seconds to set the spinbox to. Defaults to 0.
+            text_button (bool, optional): Should added row be with text button. Defaults to False.
+
+        Returns:
+            int: Created row number, counting from 1
+        """
         row = len(self.left_side_widgets['buttons'])
         if text_button:
             self.left_side_widgets['buttons'].append(ttk.Button(self.write_frame, text='Napisz tekst', command= lambda i=row: self.button_text_click(i)))
@@ -129,7 +152,13 @@ class App(Tk):
         self.set_spinboxes(row, dur_min=dur_min, dur_sec=dur_sec)
         return row
         
-    def place_left_row(self, row_num):    
+    def place_left_row(self, row_num): 
+        """
+            Place additional left row
+        
+        Args:
+            row_num (int): Row to place
+        """   
         self.left_side_widgets['buttons'][row_num].grid(row = row_num+1, column = 0)
         self.left_side_widgets['from'][row_num][0].grid(row = row_num+1, column=1)
         self.left_side_widgets['from'][row_num][1].grid(row = row_num+1, column=3)
@@ -142,7 +171,14 @@ class App(Tk):
         self.left_side_widgets['placeholders'][row_num][0].grid(row = row_num+1, column=2)
         self.left_side_widgets['placeholders'][row_num][1].grid(row = row_num+1, column=7)
         
-    def delete_row(self, row, single=True):
+    def delete_row(self, row:int, single:bool=True):
+        """
+            Delete specified row
+
+        Args:
+            row (int): Row to delete
+            single (bool, optional): If deletion operation is done on one or all rows. Defaults to True.
+        """
         self.left_side_widgets['delete'][row].destroy()
         self.left_side_widgets['buttons'][row].destroy()
         self.left_side_widgets['in'][row].destroy()
@@ -228,7 +264,13 @@ class App(Tk):
         row = self.create_left_row(text_button=True)
         self.place_left_row(row)
         
-    def button_film_click(self, row):
+    def button_film_click(self, row:int):
+        """
+            Asks for file and add it to clips or change existing
+
+        Args:
+            row (int): Row in which button was clicked
+        """
         film_name = askopenfilename(filetypes=[("Movie", 
                                                     "*.mp4 *.mkv *.flv *.webm *.avi *.wmv *.mpg *.mpeg *.flv *.mov *.mts"
                                                     )])
