@@ -257,6 +257,7 @@ class App(Tk):
             self.left_side_widgets['buttons'][row].config(text='Tekst')  
             self.left_side_widgets['films'].append(text)
             new_row = self.create_left_row()
+            self.set_spinboxes(row, dur_min=0, dur_sec=6)
             self.place_left_row(new_row)
         
     def add_text(self):

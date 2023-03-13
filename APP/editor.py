@@ -86,9 +86,12 @@ class Editor():
         for film in self.films:
             try:
                 if film['is_text']:
-                    bg = ImageClip('static/blackscreen.jpg', duration=6)
-                    text = TextClip(film['film'], fontsize=55, color='white', align='center', stroke_color='black', method='caption', size=(1920,1080))
-                    clip = CompositeVideoClip([bg, text]).subclip(0, 6)
+                    #bg = ImageClip('static/blackscreen.jpg', duration=film['to'])
+                    #text = TextClip(film['film'], fontsize=55, color='white', align='center', stroke_color='black', method='caption', size=(1920,1080))
+                    
+                    clip = TextClip(film['film'], fontsize=55, color='white', align='center', stroke_color='black', method='caption', size=(1920,1080))
+                    clip = clip.subclip(0, film['to'])
+                    #clip = CompositeVideoClip([bg, text]).subclip(0, film['to'])
                 else:
                     clip = VideoFileClip(film['film'], target_resolution=(1080, 1920), fps_source='fps')
                     
