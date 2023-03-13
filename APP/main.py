@@ -1,5 +1,7 @@
-from tkinter import  HORIZONTAL, NW, RIGHT, VERTICAL, Y, Checkbutton, IntVar, Label, Spinbox, Tk, ttk, Frame, Canvas, simpledialog
+from tkinter import  HORIZONTAL, NW, RIGHT, VERTICAL, Y, Checkbutton, IntVar, Label, Spinbox, Tk, Frame, ttk, Canvas, simpledialog
 from tkinter.filedialog import askopenfilename, asksaveasfilename
+
+import ttkbootstrap as ttkb
 
 from os.path import basename
 
@@ -32,15 +34,15 @@ class App(Tk):
         self.geometry(GEOMETRY)
         self.title(TITLE)
         self.main_color = MAIN_COLOR
-        self.configure(background = self.main_color)
+        #self.configure(background = self.main_color)
     
     # STYLE  
     def config_style(self):
         """
             Config default styles
         """
-        self.s = ttk.Style()
-        self.s.configure('My.Label', background=self.main_color, font=('TkDefaultFont', 18))
+        self.s = ttkb.Style('superhero')
+        self.s.configure('My.Label', font=('TkDefaultFont', 18))
         self.s.configure('TEntry', background='#ffffff', padding='10 10 10 10')        
         
     def set_scrollbar(self):
@@ -50,9 +52,10 @@ class App(Tk):
         def onCanvasConfigure(e):
             lutCanvas.itemconfig('frame', width=lutCanvas.winfo_width())
         
-        lutCanvas = Canvas(self, background=self.main_color)
-        scroll = ttk.Scrollbar(lutCanvas, orient=VERTICAL, command=lutCanvas.yview)
+        lutCanvas = Canvas(self)
         self.write_frame = Frame(lutCanvas)
+        
+        scroll = ttk.Scrollbar(self.write_frame, orient=VERTICAL, command=lutCanvas.yview, bootstyle='light-round')
         
         lutCanvas.configure(yscrollcommand=scroll.set)
         lutCanvas.bind('<Configure>', lambda e: lutCanvas.configure(scrollregion=lutCanvas.bbox('all')))
@@ -62,8 +65,7 @@ class App(Tk):
             
         lutCanvas.bind_all("<MouseWheel>", _on_mouse_wheel)
 
-        scroll.pack(side=RIGHT, fill=Y)
-        lutCanvas.place(relheight=1, relwidth=0.6, relx=0)
+        lutCanvas.place(relheight=1, relwidth=0.6, relx=-0.005)
         lutCanvas.create_window((0, 0), window=self.write_frame, anchor=NW, tags='frame')
         lutCanvas.bind("<Configure>", onCanvasConfigure)
         
@@ -91,22 +93,22 @@ class App(Tk):
         
         #RIGHT SIDE     
         #Labels
-        ttk.Label(self, text='INTRO:', style='My.Label').place(INTRO_PLACEMENT)
-        ttk.Label(self, text='OUTRO:', style='My.Label').place(OUTRO_PLACEMENT)
+        ttkb.Label(self, text='INTRO:', style='My.Label').place(INTRO_PLACEMENT)
+        ttkb.Label(self, text='OUTRO:', style='My.Label').place(OUTRO_PLACEMENT)
         
         #Check Boxes
         self.intro_var = IntVar(value=1)
         self.outro_var = IntVar(value=1)
-        self.intro_check = Checkbutton(self, variable=self.intro_var, background='#eaeaf2')
-        self.outro_check = Checkbutton(self, variable=self.outro_var, background='#eaeaf2')
+        self.intro_check = ttkb.Checkbutton(self, variable=self.intro_var, bootstyle="success-round-toggle")
+        self.outro_check = ttkb.Checkbutton(self, variable=self.outro_var, bootstyle="success-round-toggle")
         
         #Button
-        self.textBtn = ttk.Button(self, width=20, text='Dodaj napis', command=self.add_text)
-        self.renderBtn = ttk.Button(self, width=20, text='Render', command=self.render)
-        self.resetBtn = ttk.Button(self, width=10, text='RESET', command=self.reset)
+        self.textBtn = ttkb.Button(self, width=20, text='Dodaj napis', command=self.add_text, bootstyle='primary')
+        self.renderBtn = ttkb.Button(self, width=20, text='Render', command=self.render, bootstyle='success')
+        self.resetBtn = ttkb.Button(self, width=10, text='RESET', command=self.reset, bootstyle='danger')
         
         #Progress Bar
-        self.pb = ttk.Progressbar(self, orient=HORIZONTAL, mode='determinate', length=300)
+        self.pb = ttk.Progressbar(self, orient=HORIZONTAL, mode='determinate', length=300, bootstyle="success-striped")
         
         self.place_widgets()
         
@@ -140,15 +142,15 @@ class App(Tk):
         """
         row = len(self.left_side_widgets['buttons'])
         if text_button:
-            self.left_side_widgets['buttons'].append(ttk.Button(self.write_frame, text='Napisz tekst', command= lambda i=row: self.button_text_click(i)))
+            self.left_side_widgets['buttons'].append(ttkb.Button(self.write_frame, text='Napisz tekst', command= lambda i=row: self.button_text_click(i)))
         else:
-            self.left_side_widgets['buttons'].append(ttk.Button(self.write_frame, text='Wybierz film', command= lambda i=row: self.button_film_click(i)))
+            self.left_side_widgets['buttons'].append(ttkb.Button(self.write_frame, text='Wybierz film', command= lambda i=row: self.button_film_click(i)))
         self.left_side_widgets['from'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=4, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=4, justify=RIGHT, font=('TkDefaultFont', 10))))
         self.left_side_widgets['to'].append((Spinbox(self.write_frame, from_=0, to=59, justify=RIGHT, width=4, font=('TkDefaultFont', 10)), Spinbox(self.write_frame, from_=0, to=59, width=4, justify=RIGHT, font=('TkDefaultFont', 10))))
-        self.left_side_widgets['in'].append(ttk.Checkbutton(self.write_frame))
-        self.left_side_widgets['out'].append(ttk.Checkbutton(self.write_frame))
+        self.left_side_widgets['in'].append(ttkb.Checkbutton(self.write_frame, variable=IntVar(value=1), bootstyle="success-round-toggle"))
+        self.left_side_widgets['out'].append(ttkb.Checkbutton(self.write_frame, variable=IntVar(value=1), bootstyle="success-round-toggle"))
         self.left_side_widgets['placeholders'].append((Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold')), Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold'))))
-        self.left_side_widgets['delete'].append(ttk.Button(self.write_frame, width=2, text='X', command= lambda i=row: self.delete_row(i)))
+        self.left_side_widgets['delete'].append(ttkb.Button(self.write_frame, width=1, text='X', command= lambda i=row: self.delete_row(i), bootstyle='danger'))
         self.set_spinboxes(row, dur_min=dur_min, dur_sec=dur_sec)
         return row
         
