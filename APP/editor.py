@@ -9,7 +9,18 @@ from logger import MyBarLogger
 #from uploader import upload
 
 class Editor():
-    def __init__(self, films, intro, outro, directory, progress_bar, btn1):
+    def __init__(self, films, intro, outro, directory:str, progress_bar, btn1):
+        """
+            Editor for concatenating video file clips into single movie
+
+        Args:
+            films (list): List of dictionaries containing films parameters
+            intro (int): If intro should be added
+            outro (int): If outro should be added
+            directory (str): Directory to save final file to
+            progress_bar (Progressbar): Progress bar to update
+            btn1 (Button): Render button to turn on and off while editing
+        """
         self.films = films
         self.intro = intro
         self.outro = outro
@@ -20,18 +31,41 @@ class Editor():
         self.logger = MyBarLogger(progress_bar)
         
     def handle_intro(self, clips):
+        """
+            Add intro to existing list of clips
+
+        Args:
+            clips (list): List of clips to append outro to
+        """
         if self.intro:
             intro = VideoFileClip('static/intro.mp4', target_resolution=(1080, 1920), fps_source='fps')
             intro = self.handle_fades(intro, True, True)
             clips.append(intro)
             
     def handle_outro(self, clips):
+        """
+            Add outro to existing list of clips
+
+        Args:
+            clips (list): List of clips to append outro to
+        """
         if self.outro:
             outro = ImageClip('static/ending.jpg', duration=5)
             outro = self.handle_fades(outro, True, True)
             clips.append(outro)
 
     def handle_fades(self, clip, to_fadein:bool, to_fadeout:bool):
+        """
+            Add fadein, fadeout effect to clip
+
+        Args:
+            clip (VideoFileClip): Clip to edit
+            to_fadein (bool): If fade in should be added
+            to_fadeout (bool): If fade out should be added
+
+        Returns:
+            clip: Clip after optional fadein, fadeout
+        """
         if to_fadein:
             clip = clip.fx(fadein, 0.5)     
         if to_fadeout:
@@ -40,6 +74,9 @@ class Editor():
         return clip
         
     def edit(self):
+        """
+            Concatenate video file clips and save edited movie to chosen directory
+        """
         self.btn1['state'] = DISABLED
         
         clips = []
