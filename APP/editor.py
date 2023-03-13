@@ -1,15 +1,19 @@
 from tkinter import DISABLED, NORMAL
 from tkinter.messagebox import showinfo, showerror
-from moviepy.video.compositing.concatenate import concatenate_videoclips, CompositeVideoClip
-from moviepy.video.io.VideoFileClip import VideoFileClip
+from moviepy.video.compositing.concatenate import concatenate_videoclips, CompositeAudioClip
+from moviepy.video.io.VideoFileClip import VideoFileClip, AudioFileClip
 from moviepy.video.fx.fadein import fadein
 from moviepy.video.fx.fadeout import fadeout
+from moviepy.audio.fx.audio_loop import audio_loop
+from moviepy.audio.fx.audio_fadeout import audio_fadeout
+from moviepy.audio.fx.audio_fadein import audio_fadein
+from moviepy.audio.fx.volumex import volumex
 from moviepy.video.VideoClip import ImageClip, TextClip
 from logger import MyBarLogger
 #from uploader import upload
 
 class Editor():
-    def __init__(self, films, intro, outro, directory:str, progress_bar, btn1):
+    def __init__(self, films, intro, outro, directory:str, progress_bar, btn1, music=None):
         """
             Editor for concatenating video file clips into single movie
 
@@ -20,6 +24,7 @@ class Editor():
             directory (str): Directory to save final file to
             progress_bar (Progressbar): Progress bar to update
             btn1 (Button): Render button to turn on and off while editing
+            music (str): File path to music file
         """
         self.films = films
         self.intro = intro
@@ -29,6 +34,7 @@ class Editor():
         # self.description = description
         self.directory = directory
         self.logger = MyBarLogger(progress_bar)
+        self.music = music
         
     def handle_intro(self, clips):
         """
@@ -72,6 +78,23 @@ class Editor():
             clip = clip.fx(fadeout, 0.5)
             
         return clip
+    
+    def handle_music(self, final_movie):
+        if self.music is not None:
+            music = AudioFileClip(self.music)
+            music = audio_loop(music, duration=final_movie.duration)
+            if self.outro:
+                music = music.set_end(final_movie.duration-5)
+            if self.intro:
+                music = music.set_start(6, change_end=False)
+            music = music.fx(volumex, 0.15)
+            music = music.fx(audio_fadein, 2)
+            music = music.fx(audio_fadeout, 2)
+            
+            
+            new_audio = CompositeAudioClip([final_movie.audio, music])
+            final_movie.audio = new_audio
+        return final_movie
         
     def edit(self):
         """
@@ -114,6 +137,9 @@ class Editor():
         self.handle_outro(clips)
             
         fin = concatenate_videoclips(clips, method='compose')
+        
+        fin = self.handle_music(fin)
+        
         self.logger.reset_pb()
         fin.write_videofile(self.directory, preset='fast', threads=4, logger=self.logger)
         self.btn1['state'] = NORMAL            

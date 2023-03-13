@@ -103,9 +103,11 @@ class App(Tk):
         self.outro_check = ttkb.Checkbutton(self, variable=self.outro_var, bootstyle="success-round-toggle")
         
         #Button
+        self.musicBtn = ttkb.Button(self, width=20, text='Dodaj muzykę', command=self.add_music, bootstyle="info-outline")
+        self.musicResetBtn = ttkb.Button(self, width=1, text='X', command=self.reset_music, bootstyle="danger-outline")
         self.textBtn = ttkb.Button(self, width=20, text='Dodaj napis', command=self.add_text, bootstyle='primary')
         self.renderBtn = ttkb.Button(self, width=20, text='Render', command=self.render, bootstyle='success')
-        self.resetBtn = ttkb.Button(self, width=10, text='RESET', command=self.reset, bootstyle='danger')
+        self.resetBtn = ttkb.Button(self, width=10, text='RESET', command=self.reset, bootstyle='danger-outline')
         
         #Progress Bar
         self.pb = ttk.Progressbar(self, orient=HORIZONTAL, mode='determinate', length=300, bootstyle="success-striped")
@@ -122,6 +124,8 @@ class App(Tk):
         # RIGHT
         self.intro_check.place(INTRO_CHECK_PLACEMENT)
         self.outro_check.place(OUTRO_CHECK_PLACEMENT)
+        self.musicBtn.place(ADD_MUSIC_PLACEMENT)
+        self.musicResetBtn.place(ADD_MUSICRESET_PLACEMENT)
         self.textBtn.place(ADD_TEXT_PLACEMENT)
         self.resetBtn.place(RESET_PLACEMENT)
         self.renderBtn.place(RENDER_PLACEMENT)
@@ -150,7 +154,7 @@ class App(Tk):
         self.left_side_widgets['in'].append(ttkb.Checkbutton(self.write_frame, variable=IntVar(value=1), bootstyle="success-round-toggle"))
         self.left_side_widgets['out'].append(ttkb.Checkbutton(self.write_frame, variable=IntVar(value=1), bootstyle="success-round-toggle"))
         self.left_side_widgets['placeholders'].append((Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold')), Label(self.write_frame, text=":", height=3, font=('TkDefaultFont', 14, 'bold'))))
-        self.left_side_widgets['delete'].append(ttkb.Button(self.write_frame, width=1, text='X', command= lambda i=row: self.delete_row(i), bootstyle='danger'))
+        self.left_side_widgets['delete'].append(ttkb.Button(self.write_frame, width=1, text='X', command= lambda i=row: self.delete_row(i), bootstyle='danger-outline'))
         self.set_spinboxes(row, dur_min=dur_min, dur_sec=dur_sec)
         return row
         
@@ -222,6 +226,7 @@ class App(Tk):
             for i in range(len(self.left_side_widgets['buttons'])):
                 self.delete_row(i, single=False)
             
+            self.reset_music()
             self.reset_data()
             
             self.create_left_row()
@@ -231,6 +236,7 @@ class App(Tk):
         """
             Reset stored film variables
         """
+        self.music = None
         self.left_side_widgets = {
                 'delete':[],
                 'buttons':[],
@@ -259,6 +265,18 @@ class App(Tk):
             new_row = self.create_left_row()
             self.set_spinboxes(row, dur_min=0, dur_sec=6)
             self.place_left_row(new_row)
+    
+    def reset_music(self):
+        self.music = None
+        self.musicBtn.config(text=basename('Dodaj muzykę'))
+    
+    def add_music(self):
+        music_name = askopenfilename(filetypes=[("Audio", 
+                                                    "*.mp3 *.wav *.wv *.webm *.wma *.vos *.voc *.raw *.ogg *.oga *.mogg *.msv *.mpc *.flac *.3gp *.aa *.aac *.aax *.aiff *.alac"
+                                                    )])
+        if music_name != '':
+            self.musicBtn.config(text=basename(music_name))
+            self.music = music_name
         
     def add_text(self):
         """
@@ -318,7 +336,7 @@ class App(Tk):
 
                     out.append(semi)
                 
-            self.editor = Editor(out, self.intro_var.get(), self.outro_var.get(), directory, self.pb, self.renderBtn)
+            self.editor = Editor(out, self.intro_var.get(), self.outro_var.get(), directory, self.pb, self.renderBtn, self.music)
             
             tr = Thread(target = self.editor.edit) 
             tr.start()
