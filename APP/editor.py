@@ -93,7 +93,7 @@ class Editor():
             clips (list): List of clips to append outro to
         """
         if self.outro:
-            outro = ImageClip('static/ending.jpg', duration=5)
+            outro = VideoFileClip('static/outro.mp4', target_resolution=(1080, 1920), fps_source='fps')
             outro = self.handle_fades(outro, True, True)
             clips.append(outro)
 
